@@ -1,0 +1,4 @@
+[submodule "RIOT"]
+	path = RIOT
+	url = git@github.com:zhaolanhuang/RIOT.git
+	branch = wip/utvm
