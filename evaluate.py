@@ -11,7 +11,7 @@ from utils import generate_model_io_vars_header, extract_io_vars_from_module
 LOG_DIR = './logs'
 
 def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_iotlab=False, iotlab_node=None, random_seed=42):
-    mod, params = load_from_tflite(model_path)
+    mod, params = load_model(model_path)
     moudle = compile_per_model_eval(mod, params, board, './models/default/default.tar')
     input_vars, output_vars = extract_io_vars_from_module(moudle)
     generate_model_io_vars_header(input_vars=input_vars, output_vars=output_vars)
