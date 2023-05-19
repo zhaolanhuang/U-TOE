@@ -1,0 +1,4 @@
+MODEL_NAME := $(shell basename $(LAST_MAKEFILEDIR))
+
+CFLAGS += -I$(BINDIR)/utvm/$(MODEL_NAME)/runtime/include
+CFLAGS += -I$(BINDIR)/utvm/$(MODEL_NAME)/codegen/host/include
