@@ -18,8 +18,8 @@ git submodule update
 
 # Prequisites
 This toolkit is tested under:
-- Linux Mint 20.6
-- Python 3.10.1
+- Linux Mint 21.1 (5.15.0-58-generic)
+- Python 3.10.8
 
 ## Install TVM from Source
 First, Follow the instruction from [official docs](https://tvm.apache.org/docs/install/from_source.html).
