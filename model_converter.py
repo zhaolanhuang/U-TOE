@@ -75,17 +75,6 @@ def compile_per_model_eval(relay_mod, params, riot_board=None, mlf_path=None):
         export_model_library_format(module, mlf_path)
     return module
 
-
-
-def load_from_pytorch(model_path : str):
-    pass
-
-def load_from_onxx(model_path : str):
-    pass
-
-def load_from_mxnet(model_path : str):
-    pass
-
 def load_model(model_path: str):
     model = tvmc.load(model_path)
     return model.mod, model.params

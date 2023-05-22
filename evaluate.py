@@ -19,7 +19,7 @@ def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_
     env = {'BOARD': board, 'UTOE_TRIAL_NUM': str(trials_num), 'UTOE_RANDOM_SEED': str(random_seed)}
     print('Flashing...')
 
-    if use_iotlab:
+    if use_iotlab or iotlab_node is not None:
         riot_ctrl = get_fit_iotlab_controller(env, iotlab_node=iotlab_node)
         if iotlab_node is not None:
             riot_ctrl.flash(stdout=None)
@@ -74,7 +74,9 @@ class NpEncoder(json.JSONEncoder):
             return obj.tolist()
         return super(NpEncoder, self).default(obj)
 
-def save_evaluation_record(rec):
+def save_evaluation_record(rec, log_dir=LOG_DIR):
+    import os
+    os.makedirs(log_dir, exist_ok=True)
     file_name = rec['board'] + '_' + str(rec['datetime']) + '.json'
     file_path = LOG_DIR + '/' + file_name
     with open(file_path, 'w') as f:
