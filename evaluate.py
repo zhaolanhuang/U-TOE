@@ -28,17 +28,21 @@ def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_
         riot_ctrl.flash(stdout=None)
 
     print('Flashing...done')
+    term_retry_times = 2
     with riot_ctrl.run_term(reset=True): #reset should be false for risc v
-        try:
-            # riot_ctrl.term.expect_exact('start >')
-            riot_ctrl.term.sendline('s')
-            riot_ctrl.term.expect_exact('finished >',timeout=25)
-            raw_output = riot_ctrl.term.before
-        except:
-            print("Exception Occured, term buffer:")
-            print(riot_ctrl.term.before)
-        finally:
-            riot_ctrl.stop_exp()
+        while term_retry_times > 0 :
+            try:
+                # riot_ctrl.term.expect_exact('start >')
+                riot_ctrl.term.sendline('s')
+                riot_ctrl.term.expect_exact('finished >',timeout=25)
+                break
+            except:
+                print("Exception Occured, term buffer:")
+                print(riot_ctrl.term.before)
+                term_retry_times -= 1
+                print("Retrying...")
+        raw_output = riot_ctrl.term.before
+        riot_ctrl.stop_exp()
 
     evaluation_record = {'board' : env['BOARD'], 'datetime': datetime.now().strftime("%Y%m%d-%H%M%S"),
                          'memory': 0, 'storage': 0, 
@@ -142,4 +146,4 @@ if __name__ == '__main__':
     #     except:
     #         print(f'Evaluation Failed: {board}')
     evaluate_per_model(model_path='./model_zoo/mnist_0.983_quantized.tflite', 
-                            board='stm32f746g-disco', use_iotlab=False, iotlab_node=None)
+                            board='hifive1b', use_iotlab=False, iotlab_node=None)
