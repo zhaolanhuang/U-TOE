@@ -146,4 +146,4 @@ if __name__ == '__main__':
     #     except:
     #         print(f'Evaluation Failed: {board}')
     evaluate_per_model(model_path='./model_zoo/mnist_0.983_quantized.tflite', 
-                            board='hifive1b', use_iotlab=False, iotlab_node=None)
+                            board='stm32f746g-disco', use_iotlab=False, iotlab_node=None)
