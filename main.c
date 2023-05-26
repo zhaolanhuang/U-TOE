@@ -75,7 +75,7 @@ void per_model_eval(void)
         start =  xtimer_now_usec();
         int ret_val = tvmgen_default_run(&default_inputs, &default_outputs);
         end =  xtimer_now_usec();
-        printf("trial: %d, usec: %ld, ret: %d \n", i, (end - start), ret_val);
+        printf("trial: %d, usec: %ld, ret: %d \n", i, (long int)(end - start), ret_val);
     }
     (void) printf("Evaluation finished >\n");
 }
