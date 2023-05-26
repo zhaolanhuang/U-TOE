@@ -11,3 +11,5 @@ tflite==2.1.0
 Twisted==22.10.0
 torch=1.13.1
 torchvision=0.14.1
+iotlabcli=3.3.0
+iotlabsshcli=1.1.0
