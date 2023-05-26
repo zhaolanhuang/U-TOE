@@ -53,7 +53,13 @@ Use the command below to install the dependencies:
 ```
 pip install -r requirements.txt
 ```
+## (Optional) FIT IoT-LAB
+To use remote boards on [FIT IoT-LAB](https://www.iot-lab.info/docs/getting-started/introduction/), please first [register a testbed account](https://www.iot-lab.info/docs/getting-started/user-account/) and set up [SSH access](https://www.iot-lab.info/docs/getting-started/ssh-access/). After that, use following commands to store the credentials for U-TOE:
 
+```
+iotlab-auth -u <login user name>
+iotlab-auth --add-ssh-key
+```
 # Usage
 Befor running the evaluation, please get your model files ready from ML frameworks (TFLite, PyTorch etc.). You can find some model file examples in `model_zoo` folder.  
 
