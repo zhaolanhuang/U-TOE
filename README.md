@@ -6,7 +6,7 @@ U-TOE: Universal TinyML On-board Evaluation Toolkit for Low-Power AIoT
 It is important to clone the submodules along, with `--recursive` option.
 
 ```
-git clone --recursive git@github.com:zhaolanhuang/U-TOE.git
+git clone --recursive https://anonymous.4open.science/r/U-TOE-6C23
 ```
 
 Or open the git shell after clone, and type the following command.
