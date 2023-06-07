@@ -5,8 +5,10 @@ from tabulate import tabulate
 from datetime import datetime
 from connector import get_local_controller, get_fit_iotlab_controller
 import json
-from model_converter import load_model, compile_per_model_eval, load_from_tflite
+from model_converter import load_model, compile_per_model_eval, load_from_tflite, compile_per_ops_eval
 from utils import generate_model_io_vars_header, extract_io_vars_from_module
+from microtvm_transport import UTOETransport
+import tvm
 
 LOG_DIR = './logs'
 
@@ -133,9 +135,29 @@ def load_logs_from_folder(dir_path):
     print_per_model_evaluation(json_dict)
 
 
-def evaluate_per_operator():
-    #TODO: Wait for bugfix
-    pass
+def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False, iotlab_node=None):
+    # import logging
+    # logging.basicConfig(level=logging.DEBUG)
+
+    mod, params = load_model(model_path)
+    module = compile_per_ops_eval(mod, params, board, './models/default/default.tar')
+
+    env = {'BOARD': board, 'UTOE_GRANULARITY' : '1'}
+    print('Flashing...')
+
+    if use_iotlab or iotlab_node is not None:
+        riot_ctrl = get_fit_iotlab_controller(env, iotlab_node=iotlab_node)
+        if iotlab_node is not None:
+            riot_ctrl.flash(stdout=None)
+    else:
+        riot_ctrl = get_local_controller(env)
+        riot_ctrl.flash()
+    with tvm.micro.Session(UTOETransport(riot_ctrl=riot_ctrl)) as session:
+        debug_module = tvm.micro.create_local_debug_executor(
+            module.get_graph_json(), session.get_system_lib(), session.device
+        )
+        debug_module.run()
+        result = debug_module.debug_datum.get_debug_result(True)
 
 if __name__ == '__main__':
     # from model_converter import RIOT_BOARD_TO_TARGET
@@ -147,3 +169,6 @@ if __name__ == '__main__':
     #         print(f'Evaluation Failed: {board}')
     evaluate_per_model(model_path='./model_zoo/mnist_0.983_quantized.tflite', 
                             board='stm32f746g-disco', use_iotlab=False, iotlab_node=None)
+    
+    # evaluate_per_operator(model_path='./model_zoo/mnist_0.983_quantized.tflite', 
+    #                         board='stm32f746g-disco', use_iotlab=False, iotlab_node=None)
