@@ -36,6 +36,9 @@ RIOT_BOARD_TO_TARGET = {
 
     'hifive1b' : 'c -keys=arm_cpu,cpu -device=arm_cpu -mcpu=sifive-e31 -model=sifive-e31',
 
+    'rpi-pico' : tvm.target.target.micro('rp2040'),
+    'esp32-wroom-32' : tvm.target.target.micro('esp32'),
+
 }
 
 def load_from_tflite(model_path : str):
@@ -69,6 +72,18 @@ def compile_per_model_eval(relay_mod, params, riot_board=None, mlf_path=None):
     with tvm.transform.PassContext(opt_level=3, config={
                                                     "tir.disable_vectorize": True, 
                                                     "tir.usmp.enable": True
+                                                    }): # what is usmp? -> Enable Unified Static Memory Planning
+        module = relay.build(relay_mod, target=TARGET, runtime=RUNTIME, params=params, executor=EXECUTOR)
+    if mlf_path is not None:
+        export_model_library_format(module, mlf_path)
+    return module
+
+def compile_per_ops_eval(relay_mod, params, riot_board=None, mlf_path=None):
+    RUNTIME = tvm.relay.backend.Runtime("crt", {"system-lib": True})
+    EXECUTOR = tvm.relay.backend.Executor("graph", {"link-params": True})
+    TARGET = RIOT_BOARD_TO_TARGET.get(riot_board) or tvm.target.target.micro('host')
+    with tvm.transform.PassContext(opt_level=3, config={
+                                                    "tir.disable_vectorize": True, 
                                                     }): # what is usmp? -> Enable Unified Static Memory Planning
         module = relay.build(relay_mod, target=TARGET, runtime=RUNTIME, params=params, executor=EXECUTOR)
     if mlf_path is not None:
