@@ -1,0 +1,28 @@
+CFLAGS += -Wno-pedantic 
+CFLAGS += -Wno-attributes
+CFLAGS += -Wno-incompatible-pointer-types
+CFLAGS += -Wno-cast-align
+CFLAGS += -Wno-unused-parameter
+CFLAGS += -Wno-unused-variable
+CFLAGS += -Wno-old-style-definition
+CFLAGS += -Wno-discarded-qualifiers
+CFLAGS += -Wno-implicit-function-declaration
+
+CFLAGS += -Wno-format
+CFLAGS += -Wno-sign-compare
+CFLAGS += -Wno-unused-but-set-parameter
+
+PKG_NAME = utvm_runtime
+
+ARCHIVES += $(BINDIR)/libcommon.a
+ARCHIVES += $(BINDIR)/libmemory.a
+
+
+ARCHIVES += $(BINDIR)/libaot_executor_module.a
+ARCHIVES += $(BINDIR)/libaot_executor.a
+
+ARCHIVES += $(BINDIR)/libgraph_executor_module.a
+ARCHIVES += $(BINDIR)/libgraph_executor.a
+
+ARCHIVES += $(BINDIR)/libmicrotvm_rpc_common.a
+ARCHIVES += $(BINDIR)/libmicrotvm_rpc_server.a

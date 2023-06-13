@@ -1,0 +1,2 @@
+FEATURES_REQUIRED += cpp # basic C++ support
+FEATURES_REQUIRED += libstdcpp # libstdc++ support (for #include <cstdio>)

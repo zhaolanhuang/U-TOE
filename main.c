@@ -85,10 +85,10 @@ void per_model_eval(void)
 microtvm_rpc_server_t server;
 void per_ops_eval(void)
 {
-    char buffer[UTOE_RPC_BUFFER_SIZE];
-    (void) printf("U-TOE Per-Operator Evaluation \n");
+    uint8_t buffer[UTOE_RPC_BUFFER_SIZE];
     random_init(UTOE_RANDOM_SEED);
     server = MicroTVMRpcServerInit(write_serial, NULL);
+    TVMLogf("U-TOE Per-Operator Evaluation");
     TVMLogf("microTVM RIOT runtime - running");
     
     for(;;) {

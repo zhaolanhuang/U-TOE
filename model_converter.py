@@ -78,9 +78,9 @@ def compile_per_model_eval(relay_mod, params, riot_board=None, mlf_path=None):
         export_model_library_format(module, mlf_path)
     return module
 
-def compile_per_ops_eval(relay_mod, params, riot_board=None, mlf_path=None):
+def compile_per_ops_eval(relay_mod, params ,riot_board=None, mlf_path=None, link_params=True):
     RUNTIME = tvm.relay.backend.Runtime("crt", {"system-lib": True})
-    EXECUTOR = tvm.relay.backend.Executor("graph", {"link-params": True})
+    EXECUTOR = tvm.relay.backend.Executor("graph", {"link-params": link_params})
     TARGET = RIOT_BOARD_TO_TARGET.get(riot_board) or tvm.target.target.micro('host')
     with tvm.transform.PassContext(opt_level=3, config={
                                                     "tir.disable_vectorize": True, 
