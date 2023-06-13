@@ -6,9 +6,10 @@ from datetime import datetime
 from connector import get_local_controller, get_fit_iotlab_controller
 import json
 from model_converter import load_model, compile_per_model_eval, load_from_tflite, compile_per_ops_eval
-from utils import generate_model_io_vars_header, extract_io_vars_from_module
+from utils import generate_model_io_vars_header, extract_io_vars_from_module, _shape_to_size
 from microtvm_transport import UTOETransport
 import tvm
+from functools import reduce
 
 LOG_DIR = './logs'
 
@@ -47,9 +48,9 @@ def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_
         riot_ctrl.stop_exp()
 
     evaluation_record = {'board' : env['BOARD'], 'datetime': datetime.now().strftime("%Y%m%d-%H%M%S"),
-                         'memory': 0, 'storage': 0, 
+                         'memory': 0, 'storage': 0,
                          'trials_record': None, 'trials_stats': None,
-                         'model_path': model_path, 'random_seed': random_seed}
+                         'model_path': model_path, 'random_seed': random_seed, 'mode': 'per-model'}
 
     evaluation_record['trials_record'] = parse_per_model_output(raw_output)
     evaluation_record['trials_stats_in_usec'] = analysis.analysis_compute_latency(evaluation_record['trials_record'])
@@ -141,7 +142,7 @@ def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False
 
     mod, params = load_model(model_path)
     module = compile_per_ops_eval(mod, params, board, './models/default/default.tar')
-
+    dummy_mod = compile_per_ops_eval(mod, params, board,link_params=False)
     env = {'BOARD': board, 'UTOE_GRANULARITY' : '1'}
     print('Flashing...')
 
@@ -151,13 +152,103 @@ def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False
             riot_ctrl.flash(stdout=None)
     else:
         riot_ctrl = get_local_controller(env)
-        riot_ctrl.flash()
+        riot_ctrl.flash(stdout=None, stderr=None)
     with tvm.micro.Session(UTOETransport(riot_ctrl=riot_ctrl)) as session:
         debug_module = tvm.micro.create_local_debug_executor(
             module.get_graph_json(), session.get_system_lib(), session.device
         )
         debug_module.run()
-        result = debug_module.debug_datum.get_debug_result(True)
+        nodes_list = debug_module.debug_datum.get_graph_nodes()
+        time_list = debug_module.debug_datum._time_list
+
+    eval_data = parse_per_ops_result(nodes_list, time_list)
+
+    from tvm.contrib.debugger.debug_result import DebugResult
+
+    dbg_rslt = DebugResult(dummy_mod.get_graph_json(), '.')
+
+    nodes_info = dbg_rslt.get_graph_nodes()
+    ops_rec = {}
+
+    params_info = get_params_info(nodes_info)
+    for node_data in eval_data:
+        op = node_data[1]
+        if op == "__nop":
+            continue
+
+        op_node = [n for n in nodes_info if n["op"] == op][0]
+        op_params = list(filter(lambda x : x != "reshape_nop",op_node["inputs"]))
+        ops_rec[op] = {'time_us': node_data[2], 'time_percent': node_data[3],
+                                    'params': op_params, 'memory': None, 'storage': None}
+        
+        workspace_sizes = module.function_metadata[op].workspace_sizes
+        workspace_sizes = reduce(lambda x,y: x + y, workspace_sizes.values())
+        io_sizes = module.function_metadata[op].io_sizes
+        io_sizes = reduce(lambda x,y: x + y, io_sizes.values())
+
+        #TODO: seperate const and input / output var
+        ops_rec[op]['memory'] = workspace_sizes + io_sizes
+        ops_rec[op]['storage'] = sum(map(lambda x: params_info[x]['bytes'] 
+                                         if params_info.get(x) is not None else 0, 
+                                         op_params))
+
+    
+    print_per_model_evaluation(ops_rec)
+
+    rec = {'board' : env['BOARD'], 'datetime': datetime.now().strftime("%Y%m%d-%H%M%S"),
+        'ops_record': ops_rec, 'params_info': params_info,
+        'model_path': model_path, 'mode': 'per-ops',
+        }
+    
+    # save_evaluation_record(rec)
+
+def print_per_model_evaluation(rec):
+    headers = ['Ops', 'Time (us)', 'Time (%)', 
+               'Params', 'Memory (KB)', 'Storage (KB)'] 
+    output_list = []
+    for k,v in rec.items():
+        output = [k, v['time_us'], v['time_percent'], v['params'], v['memory'] / 1e3 , v['storage'] / 1e3]
+        output_list.append(output)
+    tabular_output = tabulate(output_list, headers=headers)
+    print(tabular_output)
+
+def parse_per_ops_result(nodes_list, time_list):
+    eid = 0
+    data = []
+    total_time = sum([np.mean(time) for time in time_list])
+    for node, time in zip(nodes_list, time_list):
+        time_mean = np.mean(time)
+        num_outputs = 1 if node["op"] == "param" else int(node["attrs"]["num_outputs"])
+        for j in range(num_outputs):
+            op = node["op"]
+            if node["op"] == "param":
+                eid += 1
+                continue
+            name = node["name"]
+            shape = None
+            time_us = round(time_mean * 1e6, 3)
+            time_percent = round(((time_mean / total_time) * 100), 3)
+            inputs = str(node["attrs"]["num_inputs"])
+            outputs = str(node["attrs"]["num_outputs"])
+            measurements = str([round(repeat_data * 1e6, 3) for repeat_data in time])
+            node_data = [name, op, time_us, time_percent, shape, inputs, outputs, measurements]
+            data.append(node_data)
+            eid += 1
+    return data
+
+def get_params_info(nodes_info):
+    params_info = {}
+    for n in nodes_info:
+        if n['op'] != 'param':
+            continue
+        name = n['name']
+        dtype = n['attrs']['T'][6:]
+        shape = n['shape']
+        params_info[name] = {'dtype': dtype, 'shape': shape,
+                            'bytes': _shape_to_size(shape, dtype),
+                            }
+    return params_info
+    
 
 if __name__ == '__main__':
     # from model_converter import RIOT_BOARD_TO_TARGET
@@ -169,6 +260,6 @@ if __name__ == '__main__':
     #         print(f'Evaluation Failed: {board}')
     evaluate_per_model(model_path='./model_zoo/mnist_0.983_quantized.tflite', 
                             board='stm32f746g-disco', use_iotlab=False, iotlab_node=None)
-    
-    # evaluate_per_operator(model_path='./model_zoo/mnist_0.983_quantized.tflite', 
+        
+    # evaluate_per_operator(model_path='./model_zoo/sinus_float.tflite', 
     #                         board='stm32f746g-disco', use_iotlab=False, iotlab_node=None)
