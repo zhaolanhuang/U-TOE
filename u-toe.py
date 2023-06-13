@@ -20,7 +20,7 @@ if __name__ == '__main__':
     parser.add_argument("--trials-num", default=10, type=int, help="defalut: 10")
     args = parser.parse_args()
     if args.per_ops:
-        evaluate_per_operator()
+        evaluate_per_operator(args.model_file, args.board, args.use_iotlab, args.iotlab_node)
     else:
         evaluate_per_model(args.model_file, args.board, args.trials_num, args.use_iotlab, args.iotlab_node, args.random_seed)
 
