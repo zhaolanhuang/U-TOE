@@ -42,6 +42,16 @@ After built up the TVM libraries, set the environment variable to tell python wh
 export TVM_HOME=/path/to/tvm
 export PYTHONPATH=$TVM_HOME/python:${PYTHONPATH}
 ```
+### Patch Graph Debug Executor
+The vanilla executor in TVM calls inexistent *__nop* operators, which will crash the RPC runtime on the board. If you want to try the Per-Operator evaluation, please patch the executor and (re)build TVM with the following commands:
+
+```
+cp <path-to-utoe>/patch/fixup_skip_nop_op.patch /path/to/tvm
+cd /path/to/tvm
+git apply fixup_skip_nop_op.patch
+( (re)build tvm )
+
+```
 
 ## Install RIOT Toolchains
 Please refer to the doc [Getting started - Compiling RIOT](https://doc.riot-os.org/getting-started.html#compiling-riot)
@@ -109,7 +119,25 @@ Board        Memory (KB)    Storage (KB)  95-CI (ms)          Mean (ms)    Media
 iotlab-m3          11.08          65.232  [97.739, 97.757]       97.748         97.751       97.733       97.764
 ```
 ## Per-Operator Evaluation
-Coming soon...
+! Please first [patch TVM executor](#patch-graph-debug-executor) before trying out this feature. !
+
+- Local example
+```
+python u-toe.py --per-ops --board stm32f746g-disco ./model_zoo/sinus_float.tflite
+```
+This command will start a Per-Operator evaluation on local board `stm32f746g-disco`, using `sinus` model.
+
+- FIT IoT-Lab Example: comming soon...
+
+- Output example
+
+```
+Ops                                            Time (us)    Time (%)  Params          Memory (KB)    Storage (KB)
+-------------------------------------------  -----------  ----------  ------------  -------------  --------------
+tvmgen_default_fused_nn_dense_add_nn_relu          8.853      15.217  ['p0', 'p1']          0.128           0.128
+tvmgen_default_fused_nn_dense_add_nn_relu_1       46.682      80.236  ['p2', 'p3']          0.128           1.088
+tvmgen_default_fused_nn_dense_add                  2.646       4.548  ['p4', 'p5']          0.02            0.068
+```
 
 # Model Zoo
 | Model        | Description                                         | File name                    |
