@@ -16,13 +16,15 @@ LOG_DIR = './logs'
 def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_iotlab=False,
                        iotlab_node=None, random_seed=42,
                        shape_dict=None):
+    print("Load Model and Code Gen...")
     mod, params = load_model(model_path, shape_dict)
     moudle = compile_per_model_eval(mod, params, board, './models/default/default.tar')
     input_vars, output_vars = extract_io_vars_from_module(moudle)
     generate_model_io_vars_header(input_vars=input_vars, output_vars=output_vars)
+    print("Load Model and Code Gen...done")
 
     env = {'BOARD': board, 'UTOE_TRIAL_NUM': str(trials_num), 'UTOE_RANDOM_SEED': str(random_seed)}
-    print('Flashing...')
+    print('Compile and Flashing...')
 
     if use_iotlab or iotlab_node is not None:
         riot_ctrl = get_fit_iotlab_controller(env, iotlab_node=iotlab_node)
@@ -32,7 +34,7 @@ def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_
         riot_ctrl = get_local_controller(env)
         riot_ctrl.flash(stdout=None, stderr=None)
 
-    print('Flashing...done')
+    print('Compile and Flashing...done')
     term_retry_times = 2
     with riot_ctrl.run_term(reset=True): #reset should be false for risc v
         while term_retry_times > 0 :
@@ -140,14 +142,16 @@ def load_logs_from_folder(dir_path):
 
 def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False, iotlab_node=None,
                           shape_dict=None):
+    print("Load Model and Code Gen...")
     mod, params = load_model(model_path, shape_dict)
     # import logging
     # logging.basicConfig(level=logging.DEBUG)
     module = compile_per_ops_eval(mod, params, board, './models/default/default.tar')
     dummy_mod = compile_per_ops_eval(mod, params, board,link_params=False)
+    print("Load Model and Code Gen...done")
     env = {'BOARD': board, 'UTOE_GRANULARITY' : '1'}
-    print('Flashing...')
-
+    
+    print('Compile and Flashing...')
     if use_iotlab or iotlab_node is not None:
         riot_ctrl = get_fit_iotlab_controller(env, iotlab_node=iotlab_node)
         if iotlab_node is not None:
@@ -155,6 +159,7 @@ def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False
     else:
         riot_ctrl = get_local_controller(env)
         riot_ctrl.flash(stdout=None, stderr=None)
+    print('Compile and Flashing...done')
     with tvm.micro.Session(UTOETransport(riot_ctrl=riot_ctrl)) as session:
         debug_module = tvm.micro.create_local_debug_executor(
             module.get_graph_json(), session.get_system_lib(), session.device
