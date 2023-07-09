@@ -18,9 +18,10 @@ if __name__ == '__main__':
                         default=None)
     parser.add_argument("--random-seed", default=42, type=int, help="default: 42")
     parser.add_argument("--trials-num", default=10, type=int, help="defalut: 10")
+    parser.add_argument("--input-shape", default=None, type=lambda s: [int(i) for i in s.split(',')], help="specify the input shape, mandatory for pytorch model. format: N,C,W,H default: None")
     args = parser.parse_args()
     if args.per_ops:
         evaluate_per_operator(args.model_file, args.board, args.use_iotlab, args.iotlab_node)
     else:
-        evaluate_per_model(args.model_file, args.board, args.trials_num, args.use_iotlab, args.iotlab_node, args.random_seed)
+        evaluate_per_model(args.model_file, args.board, args.trials_num, args.use_iotlab, args.iotlab_node, args.random_seed, {'input': args.input_shape})
 

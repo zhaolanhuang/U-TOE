@@ -13,8 +13,10 @@ from functools import reduce
 
 LOG_DIR = './logs'
 
-def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_iotlab=False, iotlab_node=None, random_seed=42):
-    mod, params = load_model(model_path)
+def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_iotlab=False,
+                       iotlab_node=None, random_seed=42,
+                       shape_dict=None):
+    mod, params = load_model(model_path, shape_dict)
     moudle = compile_per_model_eval(mod, params, board, './models/default/default.tar')
     input_vars, output_vars = extract_io_vars_from_module(moudle)
     generate_model_io_vars_header(input_vars=input_vars, output_vars=output_vars)
@@ -28,7 +30,7 @@ def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_
             riot_ctrl.flash(stdout=None)
     else:
         riot_ctrl = get_local_controller(env)
-        riot_ctrl.flash(stdout=None)
+        riot_ctrl.flash(stdout=None, stderr=None)
 
     print('Flashing...done')
     term_retry_times = 2
