@@ -1,6 +1,7 @@
 U-TOE: Universal TinyML On-board Evaluation Toolkit for Low-Power AIoT
 =====================
-
+arXiv: [On-Device Evaluation Toolkit for Machine Learning on Heterogeneous Low-Power System-on-Chip
+](https://arxiv.org/abs/2306.14574)
 # Get Source Code
 
 It is important to clone the submodules along, with `--recursive` option.
@@ -71,7 +72,9 @@ iotlab-auth -u <login user name>
 iotlab-auth --add-ssh-key
 ```
 # Usage
-Befor running the evaluation, please get your model files ready from ML frameworks (TFLite, PyTorch etc.). You can find some model file examples in `model_zoo` folder.  
+! FOR PYTORCH USER ! Please first [transform your model in *TorchScript* representation](#how-to-torchscript-your-model) !
+
+Before running the evaluation, please get your model files ready from ML frameworks (TFLite, PyTorch etc.). You can find some model file examples in `model_zoo` folder.  
 
 U-TOE provides a command line interface (CLI) entry `u-toe.py`, see below:
 
@@ -138,6 +141,19 @@ tvmgen_default_fused_nn_dense_add_nn_relu          8.853      15.217  ['p0', 'p1
 tvmgen_default_fused_nn_dense_add_nn_relu_1       46.682      80.236  ['p2', 'p3']          0.128           1.088
 tvmgen_default_fused_nn_dense_add                  2.646       4.548  ['p4', 'p5']          0.02            0.068
 ```
+## How-to: TorchScript your model
+The following code is adapted from https://tvm.apache.org/docs/how_to/compile_models/from_pytorch.html
+
+```
+# the vanilla pytorch model
+model = model.eval()
+
+# We grab the TorchScripted model via tracing
+input_shape = [1, 3, 224, 224]
+input_data = torch.randn(input_shape)
+scripted_model = torch.jit.trace(model, input_data).eval()
+scripted_model.save("torchscrpited_model.pth")
+```
 
 # Model Zoo
 | Model                  | Task                 | Description                                               | File name                    |
@@ -148,6 +164,7 @@ tvmgen_default_fused_nn_dense_add                  2.646       4.548  ['p4', 'p5
 | Deep AutoEncoder INT8  | Anomaly Detection    | Quantized deep autoencoder in INT8                        | ad01_int8.tflite             |
 | RNNoise INT8           | Noise Suppression    | Quantized GRU-based network in INT8                       | rnnoise_INT8.tflite          |
 | Sinus                  | Regression           | TFLite sine value example                                 | sinus_float.tflite           |
+
 
 # Benchmark
 We benchmarked various IoT boards with representative ML models, which can be found in the model zoo.
