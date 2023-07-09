@@ -140,10 +140,14 @@ tvmgen_default_fused_nn_dense_add                  2.646       4.548  ['p4', 'p5
 ```
 
 # Model Zoo
-| Model        | Description                                         | File name                    |
-| ------------ | --------------------------------------------------- | ---------------------------- |
-| LeNet-5 INT8 | Quantized LeNet-5 in INT8, trained on MINST dataset | mnist_0.983_quantized.tflite |
-|              |                                                     |                              |
+| Model                  | Task                 | Description                                               | File name                    |
+| ---------------------- | -------------------- | --------------------------------------------------------- | ---------------------------- |
+| LeNet-5 INT8           | Image Classification | Quantized LeNet-5 in INT8, trained on MINST dataset       | mnist_0.983_quantized.tflite |
+| MobileNetV1-0.25x INT8 | Visual Wake Words    | Quantized MobileNetV1 in INT8, with width multiplier 0.25 | vww_96_int8.tflite           |
+| DS-CNN Small INT8      | Keyword Spotting     | Quantized depthwise separable CNN in INT8                 | ds_cnn_s_quantized.tflite    |
+| Deep AutoEncoder INT8  | Anomaly Detection    | Quantized deep autoencoder in INT8                        | ad01_int8.tflite             |
+| RNNoise INT8           | Noise Suppression    | Quantized GRU-based network in INT8                       | rnnoise_INT8.tflite          |
+| Sinus                  | Regression           | TFLite sine value example                                 | sinus_float.tflite           |
 
 # Benchmark
 We benchmarked various IoT boards with representative ML models, which can be found in the model zoo.

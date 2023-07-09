@@ -90,6 +90,6 @@ def compile_per_ops_eval(relay_mod, params ,riot_board=None, mlf_path=None, link
         export_model_library_format(module, mlf_path)
     return module
 
-def load_model(model_path: str):
-    model = tvmc.load(model_path)
+def load_model(model_path: str, shape_dict=None):
+    model = tvmc.load(model_path, shape_dict=shape_dict)
     return model.mod, model.params

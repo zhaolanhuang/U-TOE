@@ -13,8 +13,10 @@ from functools import reduce
 
 LOG_DIR = './logs'
 
-def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_iotlab=False, iotlab_node=None, random_seed=42):
-    mod, params = load_model(model_path)
+def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_iotlab=False,
+                       iotlab_node=None, random_seed=42,
+                       shape_dict=None):
+    mod, params = load_model(model_path, shape_dict)
     moudle = compile_per_model_eval(mod, params, board, './models/default/default.tar')
     input_vars, output_vars = extract_io_vars_from_module(moudle)
     generate_model_io_vars_header(input_vars=input_vars, output_vars=output_vars)
@@ -28,7 +30,7 @@ def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_
             riot_ctrl.flash(stdout=None)
     else:
         riot_ctrl = get_local_controller(env)
-        riot_ctrl.flash(stdout=None)
+        riot_ctrl.flash(stdout=None, stderr=None)
 
     print('Flashing...done')
     term_retry_times = 2
@@ -136,11 +138,11 @@ def load_logs_from_folder(dir_path):
     print_per_model_evaluation(json_dict)
 
 
-def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False, iotlab_node=None):
+def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False, iotlab_node=None,
+                          shape_dict=None):
+    mod, params = load_model(model_path, shape_dict)
     # import logging
     # logging.basicConfig(level=logging.DEBUG)
-
-    mod, params = load_model(model_path)
     module = compile_per_ops_eval(mod, params, board, './models/default/default.tar')
     dummy_mod = compile_per_ops_eval(mod, params, board,link_params=False)
     env = {'BOARD': board, 'UTOE_GRANULARITY' : '1'}
@@ -193,7 +195,7 @@ def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False
                                          op_params))
 
     
-    print_per_model_evaluation(ops_rec)
+    print_per_ops_evaluation(ops_rec)
 
     rec = {'board' : env['BOARD'], 'datetime': datetime.now().strftime("%Y%m%d-%H%M%S"),
         'ops_record': ops_rec, 'params_info': params_info,
@@ -202,7 +204,7 @@ def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False
     
     # save_evaluation_record(rec)
 
-def print_per_model_evaluation(rec):
+def print_per_ops_evaluation(rec):
     headers = ['Ops', 'Time (us)', 'Time (%)', 
                'Params', 'Memory (KB)', 'Storage (KB)'] 
     output_list = []
