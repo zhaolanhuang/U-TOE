@@ -138,11 +138,11 @@ def load_logs_from_folder(dir_path):
     print_per_model_evaluation(json_dict)
 
 
-def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False, iotlab_node=None):
+def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False, iotlab_node=None,
+                          shape_dict=None):
+    mod, params = load_model(model_path, shape_dict)
     # import logging
     # logging.basicConfig(level=logging.DEBUG)
-
-    mod, params = load_model(model_path)
     module = compile_per_ops_eval(mod, params, board, './models/default/default.tar')
     dummy_mod = compile_per_ops_eval(mod, params, board,link_params=False)
     env = {'BOARD': board, 'UTOE_GRANULARITY' : '1'}

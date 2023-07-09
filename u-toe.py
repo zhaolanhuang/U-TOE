@@ -21,7 +21,7 @@ if __name__ == '__main__':
     parser.add_argument("--input-shape", default=None, type=lambda s: [int(i) for i in s.split(',')], help="specify the input shape, mandatory for pytorch model. format: N,C,W,H default: None")
     args = parser.parse_args()
     if args.per_ops:
-        evaluate_per_operator(args.model_file, args.board, args.use_iotlab, args.iotlab_node)
+        evaluate_per_operator(args.model_file, args.board, args.use_iotlab, args.iotlab_node, {'input': args.input_shape})
     else:
         evaluate_per_model(args.model_file, args.board, args.trials_num, args.use_iotlab, args.iotlab_node, args.random_seed, {'input': args.input_shape})
 
