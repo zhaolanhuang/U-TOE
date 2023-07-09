@@ -195,7 +195,7 @@ def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False
                                          op_params))
 
     
-    print_per_model_evaluation(ops_rec)
+    print_per_ops_evaluation(ops_rec)
 
     rec = {'board' : env['BOARD'], 'datetime': datetime.now().strftime("%Y%m%d-%H%M%S"),
         'ops_record': ops_rec, 'params_info': params_info,
@@ -204,7 +204,7 @@ def evaluate_per_operator(model_path, board='stm32f746g-disco', use_iotlab=False
     
     # save_evaluation_record(rec)
 
-def print_per_model_evaluation(rec):
+def print_per_ops_evaluation(rec):
     headers = ['Ops', 'Time (us)', 'Time (%)', 
                'Params', 'Memory (KB)', 'Storage (KB)'] 
     output_list = []
