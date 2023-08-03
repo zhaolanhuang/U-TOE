@@ -4,6 +4,7 @@ from types import MethodType
 def get_local_controller(env, application_directory='.'):
     ctrl =  RIOTCtrl(application_directory='.', env=env)
     ctrl.stop_exp = MethodType(lambda self: None, ctrl)
+    ctrl.cosy = MethodType(lambda self: self.make_run(['cosy']), ctrl)
     return ctrl
 
 

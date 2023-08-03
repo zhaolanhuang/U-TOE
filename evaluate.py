@@ -255,6 +255,22 @@ def get_params_info(nodes_info):
                             'bytes': _shape_to_size(shape, dtype),
                             }
     return params_info
+
+def memory_analysis(model_path, board='stm32f746g-disco',
+                       shape_dict=None):
+    print("Load Model and Code Gen...")
+    mod, params = load_model(model_path, shape_dict)
+    moudle = compile_per_model_eval(mod, params, board, './models/default/default.tar')
+    input_vars, output_vars = extract_io_vars_from_module(moudle)
+    generate_model_io_vars_header(input_vars=input_vars, output_vars=output_vars)
+    print("Load Model and Code Gen...done")
+
+    env = {'BOARD': board}
+    print('Compiling...')
+    riot_ctrl = get_local_controller(env)
+    riot_ctrl.cosy()
+
+
     
 
 if __name__ == '__main__':

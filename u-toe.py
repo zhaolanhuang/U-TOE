@@ -1,4 +1,4 @@
-from evaluate import evaluate_per_model, evaluate_per_operator
+from evaluate import evaluate_per_model, evaluate_per_operator, memory_analysis
 import argparse
 
 if __name__ == '__main__':
@@ -10,6 +10,8 @@ if __name__ == '__main__':
                             action="store_true")
     mode_group.add_argument("--per-ops", help="Per-Operator Evaluation.",
                             action="store_true")
+    mode_group.add_argument("--mem-analysis", help="Run memory consumption analysis using cosy.",
+                            action="store_true")
     parser.add_argument("--board", help="IoT board name", default="stm32f746g-disco",
                         type=str)
     parser.add_argument("--use-iotlab", help="use remote board in FIT IoT-LAB.",
@@ -20,7 +22,9 @@ if __name__ == '__main__':
     parser.add_argument("--trials-num", default=10, type=int, help="defalut: 10")
     parser.add_argument("--input-shape", default=None, type=lambda s: [int(i) for i in s.split(',')], help="specify the input shape, mandatory for pytorch model. format: N,C,W,H default: None")
     args = parser.parse_args()
-    if args.per_ops:
+    if args.mem_analysis:
+        memory_analysis(args.model_file, args.board, {'input': args.input_shape})
+    elif args.per_ops:
         evaluate_per_operator(args.model_file, args.board, args.use_iotlab, args.iotlab_node, {'input': args.input_shape})
     else:
         evaluate_per_model(args.model_file, args.board, args.trials_num, args.use_iotlab, args.iotlab_node, args.random_seed, {'input': args.input_shape})
