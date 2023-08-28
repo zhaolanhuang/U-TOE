@@ -1,7 +1,10 @@
-U-TOE: Universal TinyML On-board Evaluation Toolkit for Low-Power AIoT
+U-TOE: Universal TinyML On-board Evaluation Toolkit for Low-Power IoT
 =====================
-arXiv: [On-Device Evaluation Toolkit for Machine Learning on Heterogeneous Low-Power System-on-Chip
-](https://arxiv.org/abs/2306.14574)
+If you cite this work please use the PEMWN 2023 reference: 
+```
+Z. Huang, K. Zandberg, K. Schleiser, E. Baccelli. U-TOE: Universal TinyML On-board Evaluation Toolkit for Low-Power IoT. In Proc. of 12th IFIP/IEEE PEMWN, Sept. 2023. 
+```
+For more information on this work, please consult the preprint on [arXiv.org](https://arxiv.org/abs/2306.14574)
 # Get Source Code
 
 It is important to clone the submodules along, with `--recursive` option.
