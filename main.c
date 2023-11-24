@@ -106,9 +106,17 @@ void per_ops_eval(void)
 }
 #endif
 
+#ifdef USE_SUIT
+extern int suit_init(void);
+#endif
+
 int main(void)
 {
-    xtimer_init();	
+    xtimer_init();
+
+#ifdef USE_SUIT
+    suit_init();
+#endif
 
 #if (UTOE_GRANULARITY==1)
     per_ops_eval();

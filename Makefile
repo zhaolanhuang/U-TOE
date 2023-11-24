@@ -28,7 +28,16 @@ USEPKG += utvm_runtime
 
 endif
 
-include $(RIOTBASE)/Makefile.include
+USE_SUIT ?= 0
+SUIT_COAP_FSROOT ?= $(CURDIR)/coaproot
+ifeq ($(USE_SUIT), 1)
+	include $(CURDIR)/suit.mk
+	DIRS += suit_helpers
+	USEMODULE += suit_helpers
+	CFLAGS += -DUSE_SUIT
+else
+	include $(RIOTBASE)/Makefile.include
+endif
 
 CFLAGS += -Wno-strict-prototypes 
 CFLAGS += -Wno-missing-include-dirs
@@ -41,3 +50,4 @@ override BINARY := $(ELFFILE)
 
 list-ttys-json:
 	$(Q) python $(RIOTTOOLS)/usb-serial/ttys.py --format json
+
