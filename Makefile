@@ -28,6 +28,10 @@ USEPKG += utvm_runtime
 
 endif
 
+USEMODULE += mlmci
+USEMODULE += mlmodel_coap
+EXTERNAL_MODULE_DIRS += $(CURDIR)
+
 USE_SUIT ?= 0
 SUIT_COAP_FSROOT ?= $(CURDIR)/coaproot
 ifeq ($(USE_SUIT), 1)

@@ -25,6 +25,9 @@
 #include <tvm/runtime/crt/microtvm_rpc_server.h>
 #include <tvm/runtime/crt/logging.h>
 #include "stdio_base.h"
+#include "mlmci.h"
+#include "net/nanocoap_sock.h"
+
 
 #ifndef UTOE_RANDOM_SEED
 #define UTOE_RANDOM_SEED 42
@@ -58,22 +61,27 @@ ssize_t write_serial(void* unused_context, const uint8_t* data, size_t size) {
 
 #if (UTOE_GRANULARITY==0)
 #include <tvmgen_default.h>
+extern mlmodel_t *model_ptr;
 
 void per_model_eval(void)
 {       
-    #include "model_io_vars.h"
+    // #include "model_io_vars.h"
     (void) printf("U-TOE Per-Model Evaluation \n");
-    (void) printf("Press any key to start >\n");
-    (void) getchar();
+    // (void) printf("Press any key to start >\n");
+    // (void) getchar();
 
     random_init(UTOE_RANDOM_SEED);
     uint32_t start, end;
 
     for(int i = 0; i < UTOE_TRIAL_NUM;i++) {
+
+        for(int j = mlmodel_get_num_input_vars(model_ptr); j > 0; j--) {
+            mlmodel_iovar_t *input = mlmodel_get_input_variable(model_ptr, j - 1);
+            random_bytes(input->values, input->num_bytes);
+        }
         
-        random_bytes(&input, sizeof(input));
         start =  xtimer_now_usec();
-        int ret_val = tvmgen_default_run(&default_inputs, &default_outputs);
+        int ret_val = mlmodel_inference(model_ptr);
         end =  xtimer_now_usec();
         printf("trial: %d, usec: %ld, ret: %d \n", i, (long int)(end - start), ret_val);
     }
@@ -110,6 +118,12 @@ void per_ops_eval(void)
 extern int suit_init(void);
 #endif
 
+int test_model_params_update(void) {
+    static int8_t buf[10] = {1,2,3,4, 5, 6,7,8,9,10};
+    mlmodel_param_update_values(&(model_ptr->params[0]), sizeof(buf), 0, (uint8_t*) buf);
+    return 0; 
+}
+extern void coap_server_init();
 int main(void)
 {
     xtimer_init();
@@ -121,8 +135,27 @@ int main(void)
 #if (UTOE_GRANULARITY==1)
     per_ops_eval();
 #elif (UTOE_GRANULARITY==0)
+    mlmodel_init(model_ptr);
+
     per_model_eval();
 #endif
+    printf("Before update params[0]: \n");
+    for(int i = 0; i < 20; i++) {
+        printf("%d ", (int8_t)(model_ptr->params[0].values[i]));
+    }
+    printf("\n");
+    test_model_params_update();
 
+    printf("After update params[0]: \n");
+    for(int i = 0; i < 20; i++) {
+        printf("%d ", (int8_t)(model_ptr->params[0].values[i]));
+    }
+    printf("\n");
+
+    printf("{\"IPv6 addresses\": [\"");
+    netifs_print_ipv6("\", \"");
+    puts("\"]}");
+
+    coap_server_init();
     return 0;
 }
