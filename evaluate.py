@@ -6,7 +6,7 @@ from datetime import datetime
 from connector import get_local_controller, get_fit_iotlab_controller
 import json
 from model_converter import load_model, compile_per_model_eval, load_from_tflite, compile_per_ops_eval
-from utils import generate_model_io_vars_header, extract_io_vars_from_module, _shape_to_size
+from utils import generate_model_io_vars_header, extract_io_vars_from_module, _shape_to_size, generate_model_params_files, generate_model_io_vars_files, generate_model_binding_files
 from microtvm_transport import UTOETransport
 import tvm
 from functools import reduce
@@ -20,7 +20,12 @@ def evaluate_per_model(model_path, board='stm32f746g-disco', trials_num=10, use_
     mod, params = load_model(model_path, shape_dict)
     moudle = compile_per_model_eval(mod, params, board, './models/default/default.tar')
     input_vars, output_vars = extract_io_vars_from_module(moudle)
-    generate_model_io_vars_header(input_vars=input_vars, output_vars=output_vars)
+    input_vars = filter(lambda x: str(x['name']) not in params, input_vars)
+    input_vars = list(input_vars)
+    # generate_model_io_vars_header(input_vars=input_vars, output_vars=output_vars)
+    generate_model_io_vars_files(input_vars, output_vars)
+    generate_model_params_files(params)
+    generate_model_binding_files(params, input_vars, output_vars)
     print("Load Model and Code Gen...done")
 
     env = {'BOARD': board, 'UTOE_TRIAL_NUM': str(trials_num), 'UTOE_RANDOM_SEED': str(random_seed)}

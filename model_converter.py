@@ -73,7 +73,8 @@ def compile_per_model_eval(relay_mod, params, riot_board=None, mlf_path=None):
                                                     "tir.disable_vectorize": True, 
                                                     "tir.usmp.enable": True
                                                     }): # what is usmp? -> Enable Unified Static Memory Planning
-        module = relay.build(relay_mod, target=TARGET, runtime=RUNTIME, params=params, executor=EXECUTOR)
+        print(params.keys())
+        module = relay.build(relay_mod, target=TARGET, runtime=RUNTIME, params=None, executor=EXECUTOR)
     if mlf_path is not None:
         export_model_library_format(module, mlf_path)
     return module
