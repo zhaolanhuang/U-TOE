@@ -1,5 +1,10 @@
 U-TOE: Universal TinyML On-board Evaluation Toolkit for Low-Power IoT
 =====================
+
+# This repository will be archived
+Please check out our [RIOT-ML](https://github.com/zhaolanhuang/RIOT-ML) repository with updated workflow, tools and features.
+=====================
+
 If you cite this work please use the PEMWN 2023 reference: 
 ```
 Z. Huang, K. Zandberg, K. Schleiser, E. Baccelli. U-TOE: Universal TinyML On-board Evaluation Toolkit for Low-Power IoT. In Proc. of 12th IFIP/IEEE PEMWN, Sept. 2023. 
